@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* 3D bouncy button effects */
+  .btn-bouncy {
+    @apply transition-all duration-150 active:translate-y-1 active:shadow-inner cursor-pointer;
+  }
+  
+  .btn-card-yellow {
+    @apply bg-[#FFDE59] hover:bg-[#fed634] text-slate-800 font-extrabold border-b-4 border-[#e5c027] active:border-b-0;
+  }
+  
+  .btn-card-blue {
+    @apply bg-[#5CE1E6] hover:bg-[#48d7dd] text-slate-900 font-extrabold border-b-4 border-[#35bac0] active:border-b-0;
+  }
+
+  .btn-card-pink {
+    @apply bg-[#FF94B9] hover:bg-[#ff7fa9] text-white font-extrabold border-b-4 border-[#e36a93] active:border-b-0;
+  }
+
+  .btn-card-green {
+    @apply bg-[#7ED957] hover:bg-[#6ecb47] text-slate-900 font-extrabold border-b-4 border-[#5cb036] active:border-b-0;
+  }
+
+  .btn-card-orange {
+    @apply bg-[#FF914D] hover:bg-[#f67f33] text-white font-extrabold border-b-4 border-[#d9671f] active:border-b-0;
+  }
+
+  .btn-card-purple {
+    @apply bg-[#C977FA] hover:bg-[#bc61f6] text-white font-extrabold border-b-4 border-[#9f48d9] active:border-b-0;
+  }
+
+  .font-chinese {
+    font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
