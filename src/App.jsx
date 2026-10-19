@@ -10,42 +10,42 @@ import { api } from './services/api';
 import { sound } from './utils/audio';
 
 export default function App() {
-  const [user, setUser] = useState(null);
-  const [lessons, setLessons] = useState([]);
-  const [progressList, setProgressList] = useState([]);
-  const [currentScreen, setCurrentScreen] = useState('login'); // 'login' | 'lesson_list' | 'vocabulary' | 'quiz'
+  const initialUser = api.getCurrentUser();
+  const [user, setUser] = useState(initialUser);
+  const [lessons, setLessons] = useState(() => api.getLocalLessons());
+  const [progressList, setProgressList] = useState(() => initialUser ? api.getLocalProgress(initialUser.user_id) : []);
+  const [currentScreen, setCurrentScreen] = useState(() => initialUser ? 'lesson_list' : 'login'); // 'login' | 'lesson_list' | 'vocabulary' | 'quiz'
   const [activeLesson, setActiveLesson] = useState(null);
   const [victoryResult, setVictoryResult] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isGasConnected, setIsGasConnected] = useState(api.isConfigured());
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Khởi tạo và tải dữ liệu ban đầu
+  // Đồng bộ ngầm với Google Sheets (Stale-While-Revalidate - tải tức thì < 0.1s không chờ mạng)
   useEffect(() => {
-    async function initApp() {
-      setIsLoading(true);
-      // 1. Tải danh sách bài học
-      const loadedLessons = await api.getLessons();
-      setLessons(loadedLessons);
+    let isMounted = true;
 
-      // 2. Kiểm tra xem bé đã đăng nhập trước đó chưa
-      const currentUser = api.getCurrentUser();
-      if (currentUser) {
-        setUser(currentUser);
-        const userProg = await api.getUserProgress(currentUser.user_id);
+    // 1. Tải bài học mới nhất từ Google Sheets trong nền
+    api.getLessons().then(loadedLessons => {
+      if (isMounted && loadedLessons && loadedLessons.length > 0) {
+        setLessons(loadedLessons);
+      }
+    }).catch(err => console.warn('Sync lessons background warning:', err));
+
+    // 2. Tải tiến độ mới nhất trong nền nếu bé đã đăng nhập
+    const currentUser = api.getCurrentUser();
+    if (currentUser?.user_id) {
+      api.getUserProgress(currentUser.user_id).then(userProg => {
+        if (!isMounted) return;
         if (userProg && userProg.progress) {
           setProgressList(userProg.progress);
         }
         if (userProg && userProg.user) {
           setUser(userProg.user);
         }
-        setCurrentScreen('lesson_list');
-      }
-
-      setIsLoading(false);
+      }).catch(err => console.warn('Sync progress background warning:', err));
     }
 
-    initApp();
+    return () => { isMounted = false; };
   }, []);
 
   // Đăng nhập bé
@@ -169,19 +169,6 @@ export default function App() {
       if (res && res.user) setUser(res.user);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <div className="text-7xl animate-bounce-slow">🐼</div>
-          <div className="text-2xl font-black text-slate-800">Kids Chinese</div>
-          <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="font-bold text-slate-500">Đang khởi động ứng dụng học tiếng Trung cho bé...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FE] flex flex-col justify-between">

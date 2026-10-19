@@ -10,6 +10,19 @@ const STORAGE_KEYS = {
 
 const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxCv1dBdhjYkr0Og8MqYUlDy8BWwjrn9mn4i29A-jrwEsDoMtL7VxAcawuCfeI6Lot3/exec';
 
+async function fetchWithTimeout(url, options = {}, timeout = 3500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return response;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
+}
+
 class ApiService {
   constructor() {
     const saved = localStorage.getItem(STORAGE_KEYS.API_URL);
@@ -37,7 +50,7 @@ class ApiService {
   }
 
   /**
-   * 1. Lấy danh sách bài học (getLessons)
+   * 1. Lấy danh sách bài học (getLessons) - Tối ưu Timeout 3.5s
    */
   async getLessons() {
     if (!this.isConfigured()) {
@@ -45,10 +58,10 @@ class ApiService {
     }
 
     try {
-      const response = await fetch(`${this.apiUrl}?action=getLessons`, {
+      const response = await fetchWithTimeout(`${this.apiUrl}?action=getLessons`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-      });
+      }, 3500);
 
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const text = await response.text();
@@ -99,18 +112,18 @@ class ApiService {
   /**
    * 2. Đăng nhập hoặc Tạo hồ sơ bé (login)
    */
-  async login(childName, userId, avatar = '🐼') {
+  async login(childName, userId, avatar = 'fa-solid fa-child-reaching') {
     if (!this.isConfigured()) {
       return this.localLogin(childName, userId, avatar);
     }
 
-    // 1. Thử qua GET trước (Google Apps Script xử lý GET không bao giờ bị lỗi CORS hay preflight)
+    // 1. Thử qua GET trước (Google Apps Script xử lý GET không bao giờ bị lỗi CORS hay preflight) - Timeout 3.5s
     try {
-      const getUrl = `${this.apiUrl}?action=login&childName=${encodeURIComponent(childName)}&userId=${encodeURIComponent(userId || '')}&avatar=${encodeURIComponent(avatar || '🐼')}`;
-      const response = await fetch(getUrl, {
+      const getUrl = `${this.apiUrl}?action=login&childName=${encodeURIComponent(childName)}&userId=${encodeURIComponent(userId || '')}&avatar=${encodeURIComponent(avatar || 'fa-solid fa-child-reaching')}`;
+      const response = await fetchWithTimeout(getUrl, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-      });
+      }, 3500);
 
       if (response.ok) {
         const text = await response.text();
@@ -123,12 +136,12 @@ class ApiService {
         }
       }
     } catch (errGet) {
-      console.warn('GET login failed, trying POST...', errGet);
+      console.warn('GET login failed or timed out, trying POST...', errGet);
     }
 
-    // 2. Thử qua POST nếu GET chưa trả về
+    // 2. Thử qua POST nếu GET chưa trả về - Timeout 3.5s
     try {
-      const response = await fetch(this.apiUrl, {
+      const response = await fetchWithTimeout(this.apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
@@ -137,7 +150,7 @@ class ApiService {
           userId,
           avatar
         }),
-      });
+      }, 3500);
 
       if (response.ok) {
         const text = await response.text();
@@ -177,7 +190,7 @@ class ApiService {
         child_name: childName || `Học viên ${newId}`,
         last_login: now,
         total_stars: 0,
-        avatar: avatar || '🐼'
+        avatar: avatar || 'fa-solid fa-child-reaching'
       };
       users.push(existing);
       localStorage.setItem(STORAGE_KEYS.ALL_USERS, JSON.stringify(users));
@@ -200,7 +213,7 @@ class ApiService {
   }
 
   /**
-   * 3. Lấy tiến độ học tập cá nhân (getUserProgress)
+   * 3. Lấy tiến độ học tập cá nhân (getUserProgress) - Timeout 3.5s
    */
   async getUserProgress(userId) {
     if (!this.isConfigured()) {
@@ -211,10 +224,10 @@ class ApiService {
     }
 
     try {
-      const response = await fetch(`${this.apiUrl}?action=getUserProgress&userId=${encodeURIComponent(userId)}`, {
+      const response = await fetchWithTimeout(`${this.apiUrl}?action=getUserProgress&userId=${encodeURIComponent(userId)}`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-      });
+      }, 3500);
 
       if (!response.ok) throw new Error(`HTTP error ${response.status}`);
       const resData = await response.json();
@@ -242,7 +255,7 @@ class ApiService {
   }
 
   /**
-   * 4. Lưu và cập nhật tiến độ bài học ngược lên Google Sheets (saveProgress)
+   * 4. Lưu và cập nhật tiến độ bài học ngược lên Google Sheets (saveProgress) - Timeout 3.5s
    */
   async saveProgress({ userId, lessonId, status = 'Completed', score = 100, starsToAdd = 3 }) {
     // Luôn luôn cập nhật LocalStorage trước để giao diện mượt mà tức thì
@@ -287,7 +300,7 @@ class ApiService {
       // 1. Thử qua GET
       try {
         const getSaveUrl = `${this.apiUrl}?action=saveProgress&userId=${encodeURIComponent(userId)}&lessonId=${encodeURIComponent(lessonId)}&status=${encodeURIComponent(status)}&score=${encodeURIComponent(score)}&starsToAdd=${encodeURIComponent(starsToAdd || 0)}`;
-        const res = await fetch(getSaveUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+        const res = await fetchWithTimeout(getSaveUrl, { method: 'GET', headers: { 'Accept': 'application/json' } }, 3500);
         if (res.ok) {
           const text = await res.text();
           if (!text.includes('<!DOCTYPE html>')) {
@@ -299,7 +312,7 @@ class ApiService {
 
       // 2. Thử qua POST
       try {
-        const response = await fetch(this.apiUrl, {
+        const response = await fetchWithTimeout(this.apiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
@@ -310,7 +323,7 @@ class ApiService {
             score,
             starsToAdd
           }),
-        });
+        }, 3500);
 
         const text = await response.text();
         if (!text.includes('<!DOCTYPE html>')) {
@@ -335,10 +348,10 @@ class ApiService {
     if (!url) return { success: false, error: 'Chưa nhập URL Google Apps Script' };
 
     try {
-      const response = await fetch(`${url}?action=getLessons`, {
+      const response = await fetchWithTimeout(`${url}?action=getLessons`, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
-      });
+      }, 5000);
 
       const text = await response.text();
       if (text.includes('accounts.google.com') || text.includes('ServiceLogin')) {
