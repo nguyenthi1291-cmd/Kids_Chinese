@@ -108,7 +108,7 @@ export default function TextbookScreen({ onBack, onCompleteLesson }) {
   });
 
   return (
-    <div className="max-w-5xl mx-auto px-3 sm:px-4 py-5 space-y-6">
+    <div className="w-full max-w-6xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-6">
       {/* 1. Header & Điều hướng chính */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-3xl border-2 border-slate-200 shadow-sm">
         <div className="flex items-center gap-3">

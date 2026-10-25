@@ -2,7 +2,17 @@ import React from 'react';
 import { Star, Settings, LogOut, Sparkles, Copy, Check } from 'lucide-react';
 import { sound } from '../utils/audio';
 
-export default function Header({ user, onOpenSettings, onLogout, isGasConnected, currentScreen, onNavigate }) {
+export default function Header({ 
+  user, 
+  onOpenSettings, 
+  onLogout, 
+  isGasConnected, 
+  currentScreen, 
+  onNavigate,
+  displayScale = 100,
+  onOpenDisplayModal,
+  onQuickZoom
+}) {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopyId = () => {
@@ -172,6 +182,51 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
               >
                 Đăng Nhập Bé
               </button>
+            </div>
+          )}
+
+          {/* Nút Điều chỉnh kích thước iPad / Màn hình */}
+          {onOpenDisplayModal && (
+            <div className="flex items-center gap-1 bg-indigo-50/80 p-1 rounded-2xl border border-indigo-200">
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  onOpenDisplayModal();
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-indigo-700 hover:bg-indigo-100 font-black text-xs transition-all"
+                title="Tùy chỉnh kích thước hiển thị cho iPad / Tablet"
+              >
+                <i className="fa-solid fa-tablet-screen-button text-sm"></i>
+                <span className="hidden sm:inline">iPad</span>
+                <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono">
+                  {displayScale}%
+                </span>
+              </button>
+              
+              {onQuickZoom && (
+                <div className="hidden sm:flex items-center border-l border-indigo-200 pl-1">
+                  <button
+                    onClick={() => {
+                      sound.playPop();
+                      onQuickZoom(-5);
+                    }}
+                    className="w-6 h-6 rounded-lg hover:bg-white text-indigo-700 font-black text-[11px] flex items-center justify-center transition-all"
+                    title="Thu nhỏ 5%"
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={() => {
+                      sound.playPop();
+                      onQuickZoom(5);
+                    }}
+                    className="w-6 h-6 rounded-lg hover:bg-white text-indigo-700 font-black text-[11px] flex items-center justify-center transition-all"
+                    title="Phóng to 5%"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

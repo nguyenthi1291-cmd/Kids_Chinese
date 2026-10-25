@@ -7,6 +7,7 @@ import QuizGameScreen from './components/QuizGameScreen';
 import TextbookScreen from './components/TextbookScreen';
 import VictoryModal from './components/VictoryModal';
 import SettingsModal from './components/SettingsModal';
+import DisplaySettingsModal from './components/DisplaySettingsModal';
 import { api } from './services/api';
 import { sound } from './utils/audio';
 
@@ -20,6 +21,48 @@ export default function App() {
   const [victoryResult, setVictoryResult] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [isGasConnected, setIsGasConnected] = useState(api.isConfigured());
+
+  // Tùy chỉnh kích thước tối ưu cho iPad / Tablet
+  const [displayScale, setDisplayScale] = useState(() => {
+    try {
+      const saved = localStorage.getItem('kids_chinese_display_scale');
+      if (saved) return parseInt(saved);
+    } catch (e) {}
+    // Mặc định tự động 115% nếu là màn hình iPad / Tablet (768px - 1366px)
+    if (typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1366) {
+      return 115;
+    }
+    return 100;
+  });
+
+  const [layoutWidth, setLayoutWidth] = useState(() => {
+    try {
+      return localStorage.getItem('kids_chinese_layout_width') || 'standard';
+    } catch (e) {
+      return 'standard';
+    }
+  });
+
+  const [showDisplayModal, setShowDisplayModal] = useState(false);
+
+  const handleUpdateScale = (newScale) => {
+    setDisplayScale(newScale);
+    try {
+      localStorage.setItem('kids_chinese_display_scale', newScale.toString());
+    } catch (e) {}
+  };
+
+  const handleUpdateLayoutWidth = (newWidth) => {
+    setLayoutWidth(newWidth);
+    try {
+      localStorage.setItem('kids_chinese_layout_width', newWidth);
+    } catch (e) {}
+  };
+
+  const handleQuickZoom = (delta) => {
+    const nextVal = Math.min(150, Math.max(80, displayScale + delta));
+    handleUpdateScale(nextVal);
+  };
 
   // Đồng bộ ngầm với Google Sheets (Stale-While-Revalidate - tải tức thì < 0.1s không chờ mạng)
   useEffect(() => {
@@ -191,7 +234,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FE] flex flex-col justify-between">
+    <div 
+      className="min-h-screen bg-[#F8F9FE] flex flex-col justify-between"
+      style={{
+        zoom: `${displayScale}%`,
+        WebkitTextSizeAdjust: '100%'
+      }}
+    >
       {/* Header điều hướng */}
       <Header
         user={user}
@@ -200,10 +249,19 @@ export default function App() {
         isGasConnected={isGasConnected}
         currentScreen={currentScreen}
         onNavigate={(screen) => setCurrentScreen(screen)}
+        displayScale={displayScale}
+        onOpenDisplayModal={() => setShowDisplayModal(true)}
+        onQuickZoom={handleQuickZoom}
       />
 
       {/* Nội dung Màn hình chính */}
-      <main className="flex-1 pb-10">
+      <main className={`flex-1 pb-10 ${
+        layoutWidth === 'full' 
+          ? 'w-full px-2 sm:px-6' 
+          : layoutWidth === 'ipad-pro' 
+            ? 'max-w-6xl mx-auto w-full px-3 sm:px-5' 
+            : 'max-w-5xl mx-auto w-full px-3 sm:px-4'
+      }`}>
         {currentScreen === 'login' && (
           <LoginScreen
             onLogin={handleLogin}
@@ -272,6 +330,16 @@ export default function App() {
           onSyncNow={handleSyncNow}
         />
       )}
+
+      {/* Modal Tùy chỉnh kích thước hiển thị cho iPad / Màn hình */}
+      <DisplaySettingsModal
+        isOpen={showDisplayModal}
+        onClose={() => setShowDisplayModal(false)}
+        scale={displayScale}
+        onChangeScale={handleUpdateScale}
+        layoutWidth={layoutWidth}
+        onChangeLayoutWidth={handleUpdateLayoutWidth}
+      />
 
       {/* Footer nhỏ nhẹ */}
       <footer className="text-center py-3 text-xs font-bold text-slate-400 border-t border-slate-200 bg-white">
