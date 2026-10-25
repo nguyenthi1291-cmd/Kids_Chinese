@@ -449,10 +449,10 @@ export default function TextbookScreen({ onBack, onCompleteLesson }) {
                       </button>
                     </div>
 
-                    <div>
-                      <div className="text-xs font-bold text-slate-400 font-mono">{vocab.pinyin}</div>
-                      <div className="text-3xl font-black text-slate-800 tracking-wide">{vocab.cn}</div>
-                      <div className="text-sm font-black text-amber-700">{vocab.vn}</div>
+                    <div className="py-2 text-center bg-amber-50/50 rounded-2xl border border-amber-100">
+                      <div className="text-sm sm:text-base font-bold text-amber-600 font-mono tracking-wider">{vocab.pinyin}</div>
+                      <div className="text-5xl sm:text-6xl font-black text-slate-900 tracking-wide my-1 font-chinese drop-shadow-sm">{vocab.cn}</div>
+                      <div className="text-base sm:text-lg font-black text-amber-800">{vocab.vn}</div>
                     </div>
 
                     <p className="text-xs text-slate-500 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
@@ -828,21 +828,21 @@ export default function TextbookScreen({ onBack, onCompleteLesson }) {
             </div>
 
             {/* Khung nội dung chữ Hán to đẹp của trang sách */}
-            <div className="bg-white/80 p-6 sm:p-8 rounded-3xl border-2 border-[#EADBB8] shadow-sm text-center space-y-4">
-              <div className="text-sm sm:text-base font-mono font-bold text-amber-700 tracking-wider">
+            <div className="bg-white/80 p-6 sm:p-9 rounded-3xl border-2 border-[#EADBB8] shadow-sm text-center space-y-4">
+              <div className="text-base sm:text-lg font-mono font-bold text-amber-700 tracking-wider">
                 {currentPage.pinyin}
               </div>
-              <div className="text-3xl sm:text-5xl font-black text-slate-800 font-kids tracking-widest leading-relaxed">
+              <div className="text-4xl sm:text-6xl md:text-7xl font-black text-slate-800 font-kids tracking-widest leading-relaxed">
                 {currentPage.content}
               </div>
-              <div className="text-sm sm:text-base font-bold text-slate-600 border-t border-slate-100 pt-3 max-w-2xl mx-auto">
+              <div className="text-base sm:text-lg font-bold text-slate-600 border-t border-slate-100 pt-3 max-w-2xl mx-auto">
                 Dịch nghĩa: <span className="text-slate-800 font-extrabold">{currentPage.meaning}</span>
               </div>
             </div>
 
-            {/* Danh sách từ khóa & nét chữ trọng tâm của trang này */}
+            {/* Danh sách từ khóa & nét chữ trọng tâm của trang này (Chữ to 150%) */}
             <div className="space-y-3">
-              <h3 className="text-sm font-black text-slate-700 flex items-center gap-2">
+              <h3 className="text-sm sm:text-base font-black text-slate-700 flex items-center gap-2">
                 <i className="fa-solid fa-highlighter text-amber-500"></i>
                 <span>Từ khóa & Nét chữ trọng tâm của Trang {currentPageIndex}:</span>
               </h3>
@@ -854,13 +854,13 @@ export default function TextbookScreen({ onBack, onCompleteLesson }) {
                       sound.playPop();
                       sound.speak(kw.cn, 0.7);
                     }}
-                    className="p-3 bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 shadow-sm transition-all cursor-pointer text-center space-y-1 hover:scale-105"
+                    className="p-3.5 bg-white rounded-2xl border-2 border-slate-200 hover:border-amber-400 shadow-sm transition-all cursor-pointer text-center space-y-1.5 hover:scale-105"
                   >
-                    <div className="text-[11px] font-mono text-slate-400 font-bold">{kw.py}</div>
-                    <div className="text-2xl font-black text-slate-800">{kw.cn}</div>
-                    <div className="text-xs font-black text-amber-700">{kw.vn}</div>
+                    <div className="text-xs sm:text-sm font-mono text-amber-600 font-bold">{kw.py}</div>
+                    <div className="text-4xl sm:text-5xl font-black text-slate-900 font-chinese py-1">{kw.cn}</div>
+                    <div className="text-xs sm:text-sm font-black text-amber-800">{kw.vn}</div>
                     {kw.note && (
-                      <div className="text-[10px] text-slate-400 font-medium">{kw.note}</div>
+                      <div className="text-[11px] text-slate-400 font-medium">{kw.note}</div>
                     )}
                   </div>
                 ))}
