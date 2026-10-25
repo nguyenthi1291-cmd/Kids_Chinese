@@ -4,6 +4,7 @@ import LoginScreen from './components/LoginScreen';
 import LessonListScreen from './components/LessonListScreen';
 import VocabularyScreen from './components/VocabularyScreen';
 import QuizGameScreen from './components/QuizGameScreen';
+import TextbookScreen from './components/TextbookScreen';
 import VictoryModal from './components/VictoryModal';
 import SettingsModal from './components/SettingsModal';
 import { api } from './services/api';
@@ -14,7 +15,7 @@ export default function App() {
   const [user, setUser] = useState(initialUser);
   const [lessons, setLessons] = useState(() => api.getLocalLessons());
   const [progressList, setProgressList] = useState(() => initialUser ? api.getLocalProgress(initialUser.user_id) : []);
-  const [currentScreen, setCurrentScreen] = useState(() => initialUser ? 'lesson_list' : 'login'); // 'login' | 'lesson_list' | 'vocabulary' | 'quiz'
+  const [currentScreen, setCurrentScreen] = useState(() => initialUser ? 'lesson_list' : 'login'); // 'login' | 'lesson_list' | 'vocabulary' | 'quiz' | 'textbook'
   const [activeLesson, setActiveLesson] = useState(null);
   const [victoryResult, setVictoryResult] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -124,6 +125,25 @@ export default function App() {
     });
   };
 
+  // Hoàn thành bài tập SGK trong TextbookScreen -> Thưởng sao cho bé
+  const handleCompleteTextbookLesson = async (textbookLessonId) => {
+    if (!user) return;
+    const starsToAdd = 3;
+
+    await api.saveProgress({
+      userId: user.user_id,
+      lessonId: textbookLessonId,
+      status: 'Completed',
+      score: 100,
+      starsToAdd: starsToAdd
+    });
+
+    setUser(prev => ({
+      ...prev,
+      total_stars: (prev?.total_stars || 0) + starsToAdd
+    }));
+  };
+
   // Nút Ôn tập lại trong màn hình chiến thắng
   const handleReplayLesson = () => {
     setVictoryResult(null);
@@ -178,6 +198,8 @@ export default function App() {
         onOpenSettings={() => setShowSettings(true)}
         onLogout={handleLogout}
         isGasConnected={isGasConnected}
+        currentScreen={currentScreen}
+        onNavigate={(screen) => setCurrentScreen(screen)}
       />
 
       {/* Nội dung Màn hình chính */}
@@ -196,6 +218,14 @@ export default function App() {
             progressList={progressList}
             onSelectLesson={handleSelectLesson}
             user={user}
+            onOpenTextbook={() => setCurrentScreen('textbook')}
+          />
+        )}
+
+        {currentScreen === 'textbook' && (
+          <TextbookScreen
+            onBack={() => setCurrentScreen('lesson_list')}
+            onCompleteLesson={handleCompleteTextbookLesson}
           />
         )}
 
@@ -244,7 +274,7 @@ export default function App() {
 
       {/* Footer nhỏ nhẹ */}
       <footer className="text-center py-3 text-xs font-bold text-slate-400 border-t border-slate-200 bg-white">
-        Kids Chinese Learning App • Song Ngữ Trung - Việt • Hỗ trợ đồng bộ Google Sheets API
+        Kids Chinese Learning App • Song Ngữ Trung - Việt • Hỗ trợ tài liệu SGK tailieuhoc & Chuẩn YCT 1
       </footer>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { sound } from '../utils/audio';
 
-export default function LessonListScreen({ lessons, progressList, onSelectLesson, user }) {
+export default function LessonListScreen({ lessons, progressList, onSelectLesson, user, onOpenTextbook }) {
   const [filterMode, setFilterMode] = useState('all'); // 'all' hoặc 'review'
 
   const getLessonStatus = (lessonId) => {
@@ -66,6 +66,47 @@ export default function LessonListScreen({ lessons, progressList, onSelectLesson
           </div>
         </div>
       </div>
+
+      {/* BANNER MỚI: SÁCH GIÁO KHOA TIẾNG HOA (TAILIEUHOC) */}
+      {onOpenTextbook && (
+        <div
+          onClick={() => {
+            sound.playPop();
+            onOpenTextbook();
+          }}
+          className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 rounded-3xl p-5 sm:p-6 text-white border-4 border-yellow-300 shadow-lg cursor-pointer transform hover:scale-[1.01] transition-all flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-4 text-center sm:text-left">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-md border-2 border-white/40 flex items-center justify-center text-3xl shadow-inner shrink-0">
+              📖
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white text-orange-600 text-xs font-black uppercase shadow-xs mb-1">
+                <i className="fa-solid fa-star text-xs"></i>
+                <span>Tài Liệu Học Tập Mới</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight">
+                Sách Giáo Khoa Tiếng Hoa Lớp 1 (tailieuhoc)
+              </h3>
+              <p className="text-xs sm:text-sm font-bold text-white/90 mt-0.5">
+                Đọc bài khóa, tập viết nét bút chữ điền, luyện nói đối thoại và làm bài tập tương tác!
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              sound.playPop();
+              onOpenTextbook();
+            }}
+            className="px-5 py-2.5 rounded-2xl bg-white text-orange-600 hover:bg-orange-50 font-black text-sm shadow-md transition-all shrink-0 btn-bouncy flex items-center gap-2"
+          >
+            <span>Mở Sách Học Ngay</span>
+            <i className="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      )}
 
       {/* Tabs chuyển đổi: Lộ trình bài học vs Góc Ôn tập bài cũ (Review Mode) */}
       <div className="flex flex-wrap items-center justify-between gap-3">
