@@ -14,16 +14,19 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
     }
   };
 
+  const isYctActive = currentScreen === 'lesson_list' || currentScreen === 'vocabulary' || currentScreen === 'quiz' || currentScreen === 'login';
+  const isTextbookActive = currentScreen === 'textbook';
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-4 border-amber-200 px-4 py-2.5 shadow-sm">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Logo App & Tab Chuyển Đổi */}
+        {/* Logo App & Tab Chuyển Đổi trên Mobile */}
         <div className="flex items-center justify-between w-full sm:w-auto gap-3">
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => {
               sound.playPop();
-              if (onNavigate) onNavigate('lesson_list');
+              if (onNavigate) onNavigate(user ? 'lesson_list' : 'login');
             }}
           >
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-300 to-yellow-200 border-2 border-amber-400 flex items-center justify-center text-2xl shadow-md transform hover:rotate-6 transition-transform">
@@ -40,21 +43,21 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
             </div>
           </div>
 
-          {/* Tab Navigation trên mobile */}
-          {user && onNavigate && (
+          {/* Tab Navigation trên mobile - Luôn hiển thị cho cả bé đã đăng nhập hoặc khách */}
+          {onNavigate && (
             <div className="flex sm:hidden items-center gap-1 bg-amber-100/90 p-1 rounded-2xl border border-amber-300">
               <button
                 onClick={() => {
                   sound.playPop();
-                  onNavigate('lesson_list');
+                  onNavigate(user ? 'lesson_list' : 'login');
                 }}
                 className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all ${
-                  currentScreen !== 'textbook'
+                  !isTextbookActive
                     ? 'bg-white text-slate-800 shadow-sm border border-amber-300'
                     : 'text-amber-900'
                 }`}
               >
-                YCT 1
+                🎓 YCT 1
               </button>
               <button
                 onClick={() => {
@@ -62,7 +65,7 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
                   onNavigate('textbook');
                 }}
                 className={`px-2.5 py-1 rounded-xl text-[11px] font-black transition-all ${
-                  currentScreen === 'textbook'
+                  isTextbookActive
                     ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm'
                     : 'text-amber-900'
                 }`}
@@ -73,16 +76,16 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
           )}
         </div>
 
-        {/* Tab Navigation trên máy tính (Desktop/Tablet) */}
-        {user && onNavigate && (
-          <nav className="hidden sm:flex items-center gap-1.5 bg-amber-100/80 p-1.5 rounded-2xl border-2 border-amber-300/80">
+        {/* Tab Navigation trên máy tính (Desktop/Tablet) - Luôn hiển thị */}
+        {onNavigate && (
+          <nav className="hidden sm:flex items-center gap-1.5 bg-amber-100/90 p-1.5 rounded-2xl border-2 border-amber-300/80">
             <button
               onClick={() => {
                 sound.playPop();
-                onNavigate('lesson_list');
+                onNavigate(user ? 'lesson_list' : 'login');
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
-                currentScreen !== 'textbook'
+                !isTextbookActive
                   ? 'bg-white text-slate-800 shadow-sm border border-amber-300 scale-102'
                   : 'text-amber-900 hover:bg-white/60'
               }`}
@@ -96,7 +99,7 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
                 onNavigate('textbook');
               }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all ${
-                currentScreen === 'textbook'
+                isTextbookActive
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm scale-102'
                   : 'text-amber-900 hover:bg-white/60'
               }`}
@@ -112,7 +115,7 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
 
         {/* Thông tin bé & Thao tác */}
         <div className="flex items-center justify-end w-full sm:w-auto gap-2 sm:gap-3">
-          {user && (
+          {user ? (
             <>
               {/* Badge Bé & Mã Học Viên (User ID) */}
               <div className="flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-2xl px-3 py-1 shadow-sm">
@@ -143,9 +146,33 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
               >
                 <Star className="w-4 h-4 fill-yellow-100 text-yellow-900 animate-wiggle" />
                 <span>{user.total_stars || 0}</span>
-                <Sparkles className="w-3 h-3 text-amber-900 hidden sm:inline" />
+                <Sparkles className="w-3.5 h-3.5 text-amber-900 hidden sm:inline" />
               </div>
+
+              {/* Nút Đổi bé / Đăng xuất */}
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  onLogout();
+                }}
+                className="p-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 text-rose-600 transition-all btn-bouncy"
+                title="Đổi tài khoản học viên khác"
+              >
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
             </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  sound.playPop();
+                  if (onNavigate) onNavigate('login');
+                }}
+                className="px-3 py-1.5 rounded-2xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs transition-all shadow-sm btn-bouncy"
+              >
+                Đăng Nhập Bé
+              </button>
+            </div>
           )}
 
           {/* Nút Cài đặt Google Sheets */}
@@ -164,20 +191,6 @@ export default function Header({ user, onOpenSettings, onLogout, isGasConnected,
               }`}
             />
           </button>
-
-          {/* Nút Đổi bé / Đăng xuất */}
-          {user && (
-            <button
-              onClick={() => {
-                sound.playPop();
-                onLogout();
-              }}
-              className="p-2 rounded-2xl bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 text-rose-600 transition-all btn-bouncy"
-              title="Đổi tài khoản học viên khác"
-            >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
-          )}
         </div>
       </div>
     </header>

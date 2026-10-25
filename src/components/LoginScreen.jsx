@@ -3,7 +3,7 @@ import { AVATAR_OPTIONS } from '../data/lessonsData';
 import { sound } from '../utils/audio';
 import { Sparkles, ArrowRight, UserPlus, LogIn, Users, Cloud, HardDrive, Hash, CheckCircle2, RefreshCw } from 'lucide-react';
 
-export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings }) {
+export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings, onOpenTextbook }) {
   const [activeTab, setActiveTab] = useState('register'); // 'register' hoặc 'login'
   const [childName, setChildName] = useState('');
   const [userId, setUserId] = useState('');
@@ -66,17 +66,10 @@ export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings })
 
     sound.playPop();
     setIsSubmitting(true);
-    setStatusNote(`Đang tra cứu mã học viên ${loginIdInput.trim().toUpperCase()}...`);
+    const cleanId = loginIdInput.trim().toUpperCase();
+    setStatusNote(`Đang tìm mã học viên ${cleanId}...`);
 
-    // Tìm trong savedProfiles xem có tên tương ứng không
-    const matched = savedProfiles.find(
-      p => p.user_id.toLowerCase() === loginIdInput.trim().toLowerCase()
-    );
-
-    const name = matched ? matched.child_name : `Học viên ${loginIdInput.trim().toUpperCase()}`;
-    const avatar = matched ? matched.avatar : '🐼';
-
-    await onLogin(name, loginIdInput.trim().toUpperCase(), avatar);
+    await onLogin(null, cleanId, null);
 
     sound.playSuccess();
     setIsSubmitting(false);
@@ -141,111 +134,100 @@ export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings })
               }`}
             >
               <LogIn className="w-4 h-4" />
-              <span>Bé Cũ (Đã Có Mã ID)</span>
+              <span>Đã Có Mã Học Viên</span>
             </button>
           </div>
 
-          {/* TAB 1: ĐĂNG KÝ HỌC VIÊN MỚI */}
+          {/* TAB 1: FORM ĐĂNG KÝ BÉ MỚI */}
           {activeTab === 'register' && (
-            <form onSubmit={handleRegisterSubmit} className="space-y-5">
-              {/* Mã Học Viên Tự Động Được Cấp */}
-              <div className="bg-amber-50 rounded-2xl p-3.5 border-2 border-amber-300">
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-black text-amber-900 flex items-center gap-1">
-                    <Hash className="w-3.5 h-3.5" />
-                    <span>MÃ HỌC VIÊN CỦA BÉ (USER ID):</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleGenerateNewId}
-                    className="text-[11px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-1 underline"
-                    title="Đổi mã số ngẫu nhiên khác"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Đổi mã khác</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    required
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value.toUpperCase())}
-                    className="w-full text-lg font-mono font-black px-3.5 py-2 rounded-xl border-2 border-amber-400 bg-white text-amber-950 tracking-wider focus:outline-none focus:ring-2 focus:ring-amber-200"
-                    placeholder="Ví dụ: U001"
-                  />
-                  <div className="text-[11px] font-bold text-amber-700 leading-tight shrink-0 max-w-[140px]">
-                    * Lưu vào cột <span className="font-mono bg-amber-200 px-1 rounded">user_id</span> trên Google Sheets
-                  </div>
-                </div>
-              </div>
-
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
               {/* Tên bé */}
               <div>
-                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-black text-slate-700 uppercase mb-1">
                   Tên của bé yêu:
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ví dụ: Bảo Minh, Gia Huy, Bé Miu..."
+                  placeholder="Ví dụ: Bé Bo, An Nhiên, Minh Khôi..."
                   value={childName}
                   onChange={(e) => setChildName(e.target.value)}
-                  className="w-full text-base font-bold px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-amber-500 focus:outline-none focus:ring-3 focus:ring-amber-100 bg-slate-50 text-slate-800"
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 text-slate-800 font-bold placeholder-slate-400 outline-none transition-all text-base"
                 />
               </div>
 
-              {/* Chọn Avatar Font Awesome */}
+              {/* Mã Học Viên Tự Sinh */}
+              <div className="bg-amber-50/70 rounded-2xl p-3.5 border-2 border-amber-200">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-black text-amber-900 uppercase flex items-center gap-1">
+                    <Hash className="w-3.5 h-3.5" />
+                    <span>Mã học viên dành cho bé:</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateNewId}
+                    className="text-[11px] font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1"
+                    title="Đổi mã ngẫu nhiên khác"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Đổi mã</span>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={userId}
+                    onChange={(e) => setUserId(e.target.value.toUpperCase())}
+                    className="font-mono text-xl font-black bg-white border-2 border-amber-300 rounded-xl px-3 py-1.5 text-amber-950 tracking-wider w-full"
+                    placeholder="U001"
+                  />
+                </div>
+                <p className="text-[11px] text-amber-800/80 mt-1 font-semibold">
+                  * Ba mẹ hãy ghi nhớ mã này để đăng nhập lại trên thiết bị khác hoặc tra cứu điểm nhé!
+                </p>
+              </div>
+
+              {/* Chọn Avatar ngộ nghĩnh (Vector Font Awesome) */}
               <div>
-                <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <i className="fa-solid fa-icons text-amber-500"></i>
-                  <span>Chọn biểu tượng học viên (Font Awesome):</span>
+                <label className="block text-xs font-black text-slate-700 uppercase mb-2">
+                  Chọn biểu tượng bé thích:
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {AVATAR_OPTIONS.map((item) => {
-                    const avatarVal = item.faIcon || item.id;
-                    const isSelected = selectedAvatar === avatarVal;
+                <div className="grid grid-cols-4 gap-2.5">
+                  {AVATAR_OPTIONS.map((av) => {
+                    const isSelected = selectedAvatar === av.faIcon;
                     return (
                       <button
-                        key={item.id}
                         type="button"
+                        key={av.id}
                         onClick={() => {
                           sound.playPop();
-                          setSelectedAvatar(avatarVal);
+                          setSelectedAvatar(av.faIcon);
                         }}
-                        className={`p-2.5 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                        className={`p-3 rounded-2xl border-3 flex flex-col items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-amber-100 border-3 border-amber-500 scale-105 shadow-md ring-2 ring-amber-300'
-                            : 'bg-slate-50 border-2 border-slate-200 hover:bg-slate-100'
+                            ? 'border-amber-500 bg-amber-100 scale-105 shadow-md ring-2 ring-amber-300'
+                            : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300'
                         }`}
                       >
-                        <div className="h-8 flex items-center justify-center">
-                          <i className={`${item.faIcon} ${item.color} text-2xl`}></i>
-                        </div>
-                        <span className="text-[10px] font-black text-slate-700 mt-1 truncate max-w-full">
-                          {item.name.split(' ')[0]}
-                        </span>
+                        <i className={`${av.faIcon} text-2xl ${av.color}`}></i>
+                        <span className="text-[10px] font-black text-slate-700 mt-1">{av.label}</span>
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Nút Tạo học viên */}
+              {/* Nút Submit */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl btn-card-yellow btn-bouncy text-lg font-black shadow-lg flex items-center justify-center gap-2 hover:scale-[1.01]"
+                className="w-full py-3.5 px-4 rounded-2xl btn-card-yellow font-black text-base flex items-center justify-center gap-2 shadow-lg btn-bouncy mt-2"
               >
                 {isSubmitting ? (
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
-                    <span>{statusNote || 'Đang tạo học viên trên Google Sheet...'}</span>
-                  </div>
+                  <span>Đang khởi tạo...</span>
                 ) : (
                   <>
-                    <span>Tạo Hồ Sơ [{userId}] & Học Ngay!</span>
+                    <span>Bắt Đầu Vào Học Ngay</span>
                     <ArrowRight className="w-5 h-5" />
                   </>
                 )}
@@ -253,50 +235,61 @@ export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings })
             </form>
           )}
 
-          {/* TAB 2: ĐĂNG NHẬP BẰNG MÃ ID ĐÃ CÓ */}
+          {/* TAB 2: FORM ĐĂNG NHẬP BẰNG MÃ ĐÃ CÓ */}
           {activeTab === 'login' && (
-            <form onSubmit={handleLoginSubmit} className="space-y-5">
-              <div className="bg-sky-50 rounded-2xl p-4 border-2 border-sky-300">
-                <label className="block text-xs font-black text-sky-950 uppercase tracking-wider mb-1.5">
-                  Nhập Mã Học Viên (User ID) của bé:
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black text-slate-700 uppercase mb-1">
+                  Nhập Mã Học Viên của bé:
                 </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ví dụ: U001, U002..."
-                    value={loginIdInput}
-                    onChange={(e) => setLoginIdInput(e.target.value.toUpperCase())}
-                    className="w-full text-lg font-mono font-black px-4 py-3 rounded-2xl border-2 border-sky-400 bg-white text-slate-900 tracking-wider focus:outline-none focus:ring-3 focus:ring-sky-200"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-5 py-3 rounded-2xl btn-card-blue btn-bouncy font-black text-sm shrink-0"
-                  >
-                    Vào Học
-                  </button>
-                </div>
-                <p className="text-[11px] font-semibold text-sky-800 mt-2">
-                  * App sẽ tự động tải lại chính xác số sao ⭐ và tiến độ bài học của mã bé này từ Google Sheets.
+                <input
+                  type="text"
+                  required
+                  placeholder="Ví dụ: U001, U123..."
+                  value={loginIdInput}
+                  onChange={(e) => setLoginIdInput(e.target.value.toUpperCase())}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-sky-500 focus:ring-4 focus:ring-sky-200 text-slate-800 font-mono font-black placeholder-slate-400 outline-none transition-all text-xl tracking-wider uppercase text-center"
+                />
+                <p className="text-xs text-slate-500 mt-1.5 font-semibold text-center">
+                  Hệ thống sẽ tự động đồng bộ lại số Sao vàng và các bài bé đã hoàn thành!
                 </p>
               </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3.5 px-4 rounded-2xl btn-card-blue font-black text-base flex items-center justify-center gap-2 shadow-lg btn-bouncy"
+              >
+                {isSubmitting ? (
+                  <span>Đang kiểm tra...</span>
+                ) : (
+                  <>
+                    <span>Đăng Nhập Ngay</span>
+                    <LogIn className="w-5 h-5" />
+                  </>
+                )}
+              </button>
             </form>
           )}
 
-          {/* Danh sách các bé đã lưu gần đây (Quick Selection) */}
-          {savedProfiles.length > 0 && (
-            <div className="mt-5 pt-4 border-t-2 border-dashed border-slate-200">
-              <div className="flex items-center justify-between mb-2.5">
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-600 uppercase">
-                  <Users className="w-3.5 h-3.5" />
-                  <span>Danh sách học viên đã lưu ({savedProfiles.length}):</span>
-                </div>
-              </div>
+          {/* Trạng thái xử lý */}
+          {statusNote && (
+            <div className="mt-3 p-2.5 rounded-xl bg-amber-50 text-amber-900 text-xs font-bold text-center border border-amber-200 animate-pulse">
+              {statusNote}
+            </div>
+          )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+          {/* Danh sách học viên đã từng đăng nhập trên máy này */}
+          {savedProfiles.length > 0 && (
+            <div className="mt-6 pt-5 border-t border-slate-200">
+              <div className="flex items-center gap-2 text-xs font-black text-slate-500 uppercase mb-2.5">
+                <Users className="w-4 h-4" />
+                <span>Bé đã từng học trên máy này:</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                 {savedProfiles.map((p) => (
                   <button
+                    type="button"
                     key={p.user_id}
                     onClick={() => handleQuickLogin(p)}
                     className="flex items-center justify-between p-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 border-2 border-amber-200 text-left transition-all btn-bouncy"
@@ -321,6 +314,36 @@ export default function LoginScreen({ onLogin, isGasConnected, onOpenSettings })
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* LỐI TẮT MỞ TRỰC TIẾP SÁCH GIÁO KHOA TAILIEUHOC - KHÔNG CẦN ĐĂNG NHẬP */}
+          {onOpenTextbook && (
+            <div
+              onClick={() => {
+                sound.playPop();
+                onOpenTextbook();
+              }}
+              className="mt-5 p-4 rounded-3xl bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 text-slate-900 border-3 border-amber-300 shadow-md cursor-pointer transform hover:scale-[1.02] transition-transform flex items-center justify-between gap-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-white shadow-sm flex items-center justify-center text-2xl shrink-0">
+                  📖
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-black uppercase text-amber-950">Khám Phá Sách Giáo Khoa</span>
+                    <span className="bg-rose-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase">Mới</span>
+                  </div>
+                  <div className="text-xs sm:text-sm font-extrabold text-slate-800">
+                    Học theo tài liệu SGK Lớp 1 (tailieuhoc)
+                  </div>
+                </div>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-black text-xs shrink-0 flex items-center gap-1 shadow-sm">
+                <span>Vào Xem Ngay</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
           )}

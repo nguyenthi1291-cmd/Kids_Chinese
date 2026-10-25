@@ -209,6 +209,7 @@ export default function App() {
             onLogin={handleLogin}
             isGasConnected={isGasConnected}
             onOpenSettings={() => setShowSettings(true)}
+            onOpenTextbook={() => setCurrentScreen('textbook')}
           />
         )}
 
@@ -224,7 +225,7 @@ export default function App() {
 
         {currentScreen === 'textbook' && (
           <TextbookScreen
-            onBack={() => setCurrentScreen('lesson_list')}
+            onBack={() => setCurrentScreen(user ? 'lesson_list' : 'login')}
             onCompleteLesson={handleCompleteTextbookLesson}
           />
         )}
